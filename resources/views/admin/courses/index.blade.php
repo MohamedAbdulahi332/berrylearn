@@ -7,16 +7,13 @@
 </div>
 <div class="card">
     <div class="card-body">
-        <div class="mb-3" style="max-width: 420px;">
-            <input type="text" id="adminCourseSearchInput" class="form-control" placeholder="Search courses by title...">
-        </div>
         <table class="table">
             <thead>
                 <tr><th>ID</th><th>Title</th><th>Lessons</th><th>Created</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @forelse($courses as $course)
-                    <tr data-course-row>
+                    <tr>
                         <td>{{ $course->id }}</td>
                         <td>{{ $course->title }}</td>
                         <td>{{ $course->lessons->count() }}</td>
@@ -33,45 +30,8 @@
                 @empty
                     <tr><td colspan="5" class="text-center text-muted">No courses found.</td></tr>
                 @endforelse
-                @if($courses->count() > 0)
-                    <tr id="adminCourseSearchEmptyRow" class="d-none">
-                        <td colspan="5" class="text-center text-muted">No matching courses found.</td>
-                    </tr>
-                @endif
             </tbody>
         </table>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const input = document.getElementById('adminCourseSearchInput');
-        const rows = Array.from(document.querySelectorAll('[data-course-row]'));
-        const emptyRow = document.getElementById('adminCourseSearchEmptyRow');
-
-        if (!input || !rows.length) {
-            return;
-        }
-
-        input.addEventListener('input', function () {
-            const query = input.value.trim().toLowerCase();
-            let visibleCount = 0;
-
-            rows.forEach(function (row) {
-                const matches = row.textContent.toLowerCase().includes(query);
-                row.style.display = matches ? '' : 'none';
-
-                if (matches) {
-                    visibleCount++;
-                }
-            });
-
-            if (emptyRow) {
-                emptyRow.classList.toggle('d-none', visibleCount !== 0);
-            }
-        });
-    });
-</script>
 @endsection

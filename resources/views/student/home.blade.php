@@ -10,56 +10,38 @@
     </div>
 </div>
 
-<!-- Vertical Course List -->
+<!-- Horizontally Scrollable Course List -->
 <div class="row mt-4">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-2">
-            <h5 class="mb-0">Courses</h5>
-            <div class="w-100" style="max-width: 420px;">
-                <input type="text" id="courseSearchInput" class="form-control" placeholder="Search for a course...">
-            </div>
-        </div>
-        <div class="selection-list">
+        <h5>Courses</h5>
+        <div class="horizontal-scroll">
             @forelse($courses as $course)
                 <a href="?course_id={{ $course->id }}" 
-                   data-course-item
-                   class="btn w-100 text-start {{ request('course_id') == $course->id ? 'btn-primary' : 'btn-outline-primary' }}">
+                   class="btn {{ request('course_id') == $course->id ? 'btn-primary' : 'btn-outline-primary' }}">
                     {{ $course->title }}
                 </a>
             @empty
                 <p class="text-muted">No courses available yet.</p>
             @endforelse
         </div>
-        @if($courses->count() > 0)
-            <p id="courseSearchEmpty" class="text-muted mt-2 d-none">No matching courses found.</p>
-        @endif
     </div>
 </div>
 
-<!-- Vertical Lesson List (shown when course is selected) -->
+<!-- Horizontally Scrollable Lesson List (shown when course is selected) -->
 @if($selectedCourse)
 <div class="row mt-4">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-2">
-            <h5 class="mb-0">Lessons in {{ $selectedCourse->title }}</h5>
-            <div class="w-100" style="max-width: 420px;">
-                <input type="text" id="lessonSearchInput" class="form-control" placeholder="Search for a lesson...">
-            </div>
-        </div>
-        <div class="selection-list">
+        <h5>Lessons in {{ $selectedCourse->title }}</h5>
+        <div class="horizontal-scroll">
             @forelse($selectedCourse->lessons as $lesson)
                 <a href="?course_id={{ $selectedCourse->id }}&lesson_id={{ $lesson->id }}" 
-                   data-lesson-item
-                   class="btn w-100 text-start {{ request('lesson_id') == $lesson->id ? 'btn-success' : 'btn-outline-success' }}">
+                   class="btn {{ request('lesson_id') == $lesson->id ? 'btn-success' : 'btn-outline-success' }}">
                     {{ $lesson->title }}
                 </a>
             @empty
                 <p class="text-muted">No lessons available for this course.</p>
             @endforelse
         </div>
-        @if($selectedCourse->lessons->count() > 0)
-            <p id="lessonSearchEmpty" class="text-muted mt-2 d-none">No matching lessons found.</p>
-        @endif
     </div>
 </div>
 @endif
@@ -189,43 +171,4 @@
     </div>
 </div>
 @endif
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const bindFilter = function (inputId, itemSelector, emptyId) {
-            const input = document.getElementById(inputId);
-            const items = Array.from(document.querySelectorAll(itemSelector));
-            const emptyMessage = document.getElementById(emptyId);
-
-            if (!input || !items.length) {
-                return;
-            }
-
-            const filterItems = function () {
-                const query = input.value.trim().toLowerCase();
-                let visibleCount = 0;
-
-                items.forEach(function (item) {
-                    const matches = item.textContent.toLowerCase().includes(query);
-                    item.style.display = matches ? '' : 'none';
-
-                    if (matches) {
-                        visibleCount++;
-                    }
-                });
-
-                if (emptyMessage) {
-                    emptyMessage.classList.toggle('d-none', visibleCount !== 0);
-                }
-            };
-
-            input.addEventListener('input', filterItems);
-        };
-
-        bindFilter('courseSearchInput', '[data-course-item]', 'courseSearchEmpty');
-        bindFilter('lessonSearchInput', '[data-lesson-item]', 'lessonSearchEmpty');
-    });
-</script>
 @endsection

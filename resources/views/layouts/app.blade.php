@@ -6,24 +6,20 @@
     <title>@yield('title', 'BerryLearn LMS')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .selection-list {
+        .horizontal-scroll {
             display: flex;
-            flex-direction: column;
+            overflow-x: auto;
             gap: 10px;
-            max-height: 420px;
-            overflow-y: auto;
-            padding: 10px 6px 10px 0;
+            padding: 10px 0;
+            white-space: nowrap;
         }
-        .selection-list .btn {
-            white-space: normal;
+        .horizontal-scroll::-webkit-scrollbar {
+            height: 8px;
         }
-        .selection-list::-webkit-scrollbar {
-            width: 8px;
-        }
-        .selection-list::-webkit-scrollbar-track {
+        .horizontal-scroll::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-        .selection-list::-webkit-scrollbar-thumb {
+        .horizontal-scroll::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 4px;
         }

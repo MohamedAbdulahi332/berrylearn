@@ -20,25 +20,13 @@ class QuizController extends Controller
         // Calculate score
         $score = 0;
         $total = $questions->count();
-        $answerReview = [];
 
         foreach ($questions as $question) {
             $userAnswer = $request->input('question_' . $question->id);
-            $correctAnswer = $question->correct_answer;
-            $isCorrect = $userAnswer === $correctAnswer;
 
-            if ($isCorrect) {
+            if ($userAnswer === $question->correct_answer) {
                 $score++;
             }
-
-            $answerReview[] = [
-                'question_text' => $question->question_text,
-                'user_answer' => $userAnswer,
-                'user_answer_text' => $userAnswer ? $question->{'option_' . $userAnswer} : null,
-                'correct_answer' => $correctAnswer,
-                'correct_answer_text' => $question->{'option_' . $correctAnswer},
-                'is_correct' => $isCorrect,
-            ];
         }
 
         // Store result in database
@@ -55,7 +43,6 @@ class QuizController extends Controller
             'score' => $score,
             'total' => $total,
             'percentage' => $quizResult->percentage,
-            'answerReview' => $answerReview,
         ]);
     }
 }
