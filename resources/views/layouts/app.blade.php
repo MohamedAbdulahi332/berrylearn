@@ -406,9 +406,20 @@
                         entry.target.classList.add('in-view');
                         observer.unobserve(entry.target);
                     });
-                }, { threshold: 0.12 });
+                }, {
+                    threshold: 0.01,
+                    rootMargin: '0px 0px -8% 0px'
+                });
 
                 revealItems.forEach(function (item) {
+                    const itemTop = item.getBoundingClientRect().top;
+
+                    // Section: Immediately reveal any block that is already on screen.
+                    if (itemTop <= (window.innerHeight - 24)) {
+                        item.classList.add('in-view');
+                        return;
+                    }
+
                     revealObserver.observe(item);
                 });
             } else {
