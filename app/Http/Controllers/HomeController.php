@@ -3,31 +3,50 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use App\Models\Lesson;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     /**
-     * Section: Show the student homepage with course and lesson content.
+     * Section: Show the student homepage with the course browser only.
      */
-    public function index(Request $request)
+    public function index()
     {
         // Section: Load the course browser with lesson counts.
         $courses = Course::with('lessons')->get();
 
-        // Section: Resolve the currently selected course and lesson.
-        $selectedCourse = null;
+        return view('student.home', compact('courses'));
+    }
+
+    /**
+     * Section: Show a dedicated course page with its lessons and selected lesson detail.
+     */
+    public function showCourse(Request $request, Course $course)
+    {
+        // Section: Load the selected course and its lesson list.
+        $course->load([
+            'lessons' => fn ($query) => $query->orderBy('id'),
+        ]);
+
+        // Section: Resolve the selected lesson or fall back to the first lesson in the course.
         $selectedLesson = null;
 
-        if ($request->has('course_id')) {
-            $selectedCourse = Course::with('lessons')->find($request->course_id);
+        if ($request->filled('lesson_id')) {
+            $selectedLesson = $course->lessons()
+                ->with(['course', 'quizzes.questions'])
+                ->find($request->lesson_id);
         }
 
-        if ($request->has('lesson_id')) {
-            $selectedLesson = Lesson::with(['course', 'quizzes.questions'])->find($request->lesson_id);
+        if (!$selectedLesson) {
+            $selectedLesson = $course->lessons()
+                ->with(['course', 'quizzes.questions'])
+                ->orderBy('id')
+                ->first();
         }
 
-        return view('student.home', compact('courses', 'selectedCourse', 'selectedLesson'));
+        return view('student.course', [
+            'course' => $course,
+            'selectedLesson' => $selectedLesson,
+        ]);
     }
 }

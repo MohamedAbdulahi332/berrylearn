@@ -34,15 +34,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:student'])->group(function () {
-    // Student Homepage
+    // Section: Student homepage.
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-    // Student Profile
+    // Section: Student course detail page.
+    Route::get('/courses/{course}', [HomeController::class, 'showCourse'])->name('student.courses.show');
+
+    // Section: Student profile.
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    // Quiz Submission
+    // Section: Student quiz submission.
     Route::post('/quiz/{quiz}/submit', [QuizController::class, 'submit'])->name('quiz.submit');
 });
 
