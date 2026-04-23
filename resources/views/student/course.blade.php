@@ -51,11 +51,11 @@
                     <a href="{{ route('home') }}" class="btn btn-sm btn-outline-primary">Open Another Course</a>
                 </div>
 
-                <div class="horizontal-scroll">
+                <div class="horizontal-scroll lesson-chip-grid">
                     @forelse($course->lessons as $lesson)
                         <a
                             href="{{ route('student.courses.show', ['course' => $course, 'lesson_id' => $lesson->id]) }}"
-                            class="btn {{ optional($selectedLesson)->id === $lesson->id ? 'btn-success' : 'btn-outline-success' }}"
+                            class="btn lesson-chip {{ optional($selectedLesson)->id === $lesson->id ? 'btn-success' : 'btn-outline-success' }}"
                         >
                             {{ $lesson->title }}
                         </a>

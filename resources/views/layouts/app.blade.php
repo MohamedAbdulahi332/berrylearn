@@ -152,6 +152,17 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 18px rgba(13, 110, 253, 0.12);
         }
+        .lesson-chip-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .lesson-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 190px;
+        }
         .course-browser-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -259,12 +270,17 @@
             color: var(--berry-primary);
             font-weight: 600;
         }
-        .reveal-up {
+        .reveal-up,
+        .reveal-up.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        body.motion-ready .reveal-up {
             opacity: 0;
             transform: translateY(14px);
             transition: opacity 0.28s ease, transform 0.28s ease;
         }
-        .reveal-up.in-view {
+        body.motion-ready .reveal-up.in-view {
             opacity: 1;
             transform: translateY(0);
         }
@@ -272,6 +288,18 @@
             .navbar .nav-link,
             .navbar .btn-link.nav-link {
                 margin-top: 0.25rem;
+            }
+        }
+        @media (max-width: 767.98px) {
+            .lesson-chip-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                white-space: normal;
+                overflow: visible;
+            }
+            .lesson-chip {
+                width: 100%;
+                min-width: 0;
             }
         }
     </style>
@@ -369,6 +397,7 @@
             // Section: Fade content in as it enters the viewport.
             const revealItems = document.querySelectorAll('.reveal-up');
             if ('IntersectionObserver' in window && revealItems.length > 0) {
+                document.body.classList.add('motion-ready');
                 const revealObserver = new IntersectionObserver(function (entries, observer) {
                     entries.forEach(function (entry) {
                         if (!entry.isIntersecting) {
