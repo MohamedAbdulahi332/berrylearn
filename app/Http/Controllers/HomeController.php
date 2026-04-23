@@ -25,7 +25,9 @@ class HomeController extends Controller
     {
         // Section: Load the selected course and its lesson list.
         $course->load([
-            'lessons' => fn ($query) => $query->orderBy('id'),
+            'lessons' => function ($query) {
+                $query->orderBy('id');
+            },
         ]);
 
         // Section: Resolve the selected lesson or fall back to the first lesson in the course.

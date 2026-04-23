@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Manage Courses')
 @section('content')
-@php($totalLessons = $courses->sum(fn ($course) => $course->lessons->count()))
+@php($totalLessons = $courses->sum(function ($course) { return $course->lessons->count(); }))
 
 <div class="d-flex justify-content-between align-items-center mb-4 reveal-up">
     <div>

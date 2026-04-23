@@ -14,8 +14,8 @@
     <div class="card-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
         <div class="d-flex flex-wrap gap-2">
             <span class="badge-soft">Lessons: {{ $lessons->count() }}</span>
-            <span class="badge-soft">With Video: {{ $lessons->filter(fn ($lesson) => $lesson->resolvedVideoPath())->count() }}</span>
-            <span class="badge-soft">With PDF: {{ $lessons->filter(fn ($lesson) => $lesson->resolvedPdfPath())->count() }}</span>
+            <span class="badge-soft">With Video: {{ $lessons->filter(function ($lesson) { return $lesson->resolvedVideoPath(); })->count() }}</span>
+            <span class="badge-soft">With PDF: {{ $lessons->filter(function ($lesson) { return $lesson->resolvedPdfPath(); })->count() }}</span>
         </div>
         <div class="search-wrap w-100" style="max-width: 320px;">
             <span class="search-label">Find</span>
