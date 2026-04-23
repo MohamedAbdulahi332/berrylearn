@@ -12,7 +12,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::with('lessons')->latest()->get();
+        $courses = Course::with('lessons')->orderByDesc('id')->get();
 
         return view('admin.courses.index', compact('courses'));
     }

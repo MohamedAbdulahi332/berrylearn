@@ -13,7 +13,7 @@ class LessonController extends Controller
      */
     public function index()
     {
-        $lessons = Lesson::with('course')->latest()->get();
+        $lessons = Lesson::with('course')->orderByDesc('id')->get();
 
         return view('admin.lessons.index', compact('lessons'));
     }

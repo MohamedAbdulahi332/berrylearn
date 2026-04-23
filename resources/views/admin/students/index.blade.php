@@ -29,7 +29,7 @@
                                 <td>{{ $student->id }}</td>
                                 <td>{{ $student->name }}</td>
                                 <td>{{ $student->email }}</td>
-                                <td>{{ $student->created_at->format('M d, Y') }}</td>
+                                <td>{{ optional($student->created_at)->format('M d, Y') ?? 'Not available' }}</td>
                                 <td>
                                     <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-sm btn-primary">Edit</a>
                                     

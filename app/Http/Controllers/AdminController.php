@@ -25,7 +25,7 @@ class AdminController extends Controller
      */
     public function students()
     {
-        $students = User::where('role', 'student')->latest()->get();
+        $students = User::where('role', 'student')->orderByDesc('id')->get();
 
         return view('admin.students.index', compact('students'));
     }
@@ -98,7 +98,7 @@ class AdminController extends Controller
             });
         }
 
-        $results = $query->latest()->get();
+        $results = $query->orderByDesc('id')->get();
         $students = User::where('role', 'student')->get();
         $courses = \App\Models\Course::all();
 

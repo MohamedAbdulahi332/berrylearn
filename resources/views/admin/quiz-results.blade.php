@@ -37,10 +37,10 @@
                 <tr>
                     <td>{{ $result->user->name }}</td>
                     <td>{{ $result->quiz->title }}</td>
-                    <td>{{ $result->quiz->lesson->course->title }}</td>
+                    <td>{{ optional(optional(optional($result->quiz)->lesson)->course)->title ?? 'Missing course' }}</td>
                     <td>{{ $result->score }}/{{ $result->total }}</td>
                     <td><span class="badge bg-{{ $result->percentage >= 80 ? 'success' : ($result->percentage >= 60 ? 'info' : 'warning') }}">{{ $result->percentage }}%</span></td>
-                    <td>{{ $result->created_at->format('M d, Y H:i') }}</td>
+                    <td>{{ optional($result->created_at)->format('M d, Y H:i') ?? 'Not available' }}</td>
                 </tr>
             @empty
                 <tr><td colspan="6" class="text-center text-muted">No results found.</td></tr>

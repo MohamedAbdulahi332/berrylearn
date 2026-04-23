@@ -38,10 +38,10 @@
                 </thead>
                 <tbody id="lesson-table-body">
                     @forelse($lessons as $lesson)
-                        <tr data-filter-item data-filter-text="{{ strtolower($lesson->title . ' ' . $lesson->course->title . ' ' . $lesson->id) }}">
+                        <tr data-filter-item data-filter-text="{{ strtolower($lesson->title . ' ' . (optional($lesson->course)->title ?? 'unassigned') . ' ' . $lesson->id) }}">
                             <td>{{ $lesson->id }}</td>
                             <td>{{ $lesson->title }}</td>
-                            <td>{{ $lesson->course->title }}</td>
+                            <td>{{ optional($lesson->course)->title ?? 'Unassigned' }}</td>
                             <td>
                                 <span class="badge {{ $lesson->resolvedVideoPath() ? 'text-bg-success' : 'text-bg-secondary' }}">
                                     {{ $lesson->resolvedVideoPath() ? 'Uploaded' : 'None' }}
@@ -73,7 +73,7 @@
                 <div
                     class="card interactive-card"
                     data-filter-item
-                    data-filter-text="{{ strtolower($lesson->title . ' ' . $lesson->course->title . ' ' . $lesson->id) }}"
+                    data-filter-text="{{ strtolower($lesson->title . ' ' . (optional($lesson->course)->title ?? 'unassigned') . ' ' . $lesson->id) }}"
                 >
                     <div class="card-body d-flex flex-column gap-3">
                         <div>
@@ -81,7 +81,7 @@
                                 <div>
                                     <p class="text-muted small mb-1">Lesson #{{ $lesson->id }}</p>
                                     <h5 class="mb-1">{{ $lesson->title }}</h5>
-                                    <p class="text-muted mb-0">{{ $lesson->course->title }}</p>
+                                    <p class="text-muted mb-0">{{ optional($lesson->course)->title ?? 'Unassigned' }}</p>
                                 </div>
                             </div>
                         </div>

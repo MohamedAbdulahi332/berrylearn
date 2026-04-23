@@ -10,8 +10,8 @@
         <tr>
             <td>{{ $quiz->id }}</td>
             <td>{{ $quiz->title }}</td>
-            <td>{{ $quiz->lesson->title }}</td>
-            <td>{{ $quiz->lesson->course->title }}</td>
+            <td>{{ optional($quiz->lesson)->title ?? 'Missing lesson' }}</td>
+            <td>{{ optional(optional($quiz->lesson)->course)->title ?? 'Missing course' }}</td>
             <td>{{ $quiz->questions->count() }}</td>
             <td>
                 <a href="{{ route('admin.quizzes.questions', $quiz) }}" class="btn btn-sm btn-info">Questions</a>

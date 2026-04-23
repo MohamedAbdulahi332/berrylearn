@@ -14,7 +14,7 @@ class AdminQuizController extends Controller
      */
     public function index()
     {
-        $quizzes = Quiz::with('lesson.course')->latest()->get();
+        $quizzes = Quiz::with('lesson.course')->orderByDesc('id')->get();
 
         return view('admin.quizzes.index', compact('quizzes'));
     }

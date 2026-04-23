@@ -39,7 +39,7 @@
                             <td>{{ $course->id }}</td>
                             <td>{{ $course->title }}</td>
                             <td><span class="badge text-bg-primary">{{ $course->lessons->count() }}</span></td>
-                            <td>{{ $course->created_at->format('M d, Y') }}</td>
+                            <td>{{ optional($course->created_at)->format('M d, Y') ?? 'Not available' }}</td>
                             <td>
                                 <a href="{{ route('admin.courses.edit', $course) }}" class="btn btn-sm btn-primary">Edit</a>
                                 <form method="POST" action="{{ route('admin.courses.delete', $course) }}" class="d-inline">
