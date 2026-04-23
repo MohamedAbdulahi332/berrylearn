@@ -9,14 +9,14 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
     /**
-     * Show student homepage with courses and lessons
+     * Section: Show the student homepage with course and lesson content.
      */
     public function index(Request $request)
     {
-        // Get all courses
+        // Section: Load the course browser with lesson counts.
         $courses = Course::with('lessons')->get();
 
-        // Get selected course and lesson if provided
+        // Section: Resolve the currently selected course and lesson.
         $selectedCourse = null;
         $selectedLesson = null;
 
@@ -25,7 +25,7 @@ class HomeController extends Controller
         }
 
         if ($request->has('lesson_id')) {
-            $selectedLesson = Lesson::with(['quizzes.questions'])->find($request->lesson_id);
+            $selectedLesson = Lesson::with(['course', 'quizzes.questions'])->find($request->lesson_id);
         }
 
         return view('student.home', compact('courses', 'selectedCourse', 'selectedLesson'));

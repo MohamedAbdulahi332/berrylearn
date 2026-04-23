@@ -3,10 +3,14 @@
 @section('title', 'Student Home')
 
 @section('content')
+{{-- Section: Selected lesson metrics. --}}
 @php
     $selectedLessonCount = $selectedCourse ? $selectedCourse->lessons->count() : 0;
+    $selectedVideoPath = $selectedLesson ? $selectedLesson->resolvedVideoPath() : null;
+    $selectedPdfPath = $selectedLesson ? $selectedLesson->resolvedPdfPath() : null;
 @endphp
 
+{{-- Section: Student page heading. --}}
 <div class="row reveal-up">
     <div class="col-12">
         <h2>Welcome, {{ auth()->user()->name }}!</h2>
@@ -14,6 +18,7 @@
     </div>
 </div>
 
+{{-- Section: Interactive course browser and lesson picker. --}}
 <div class="row mt-4">
     <div class="col-12">
         <div class="card section-card reveal-up">
@@ -45,16 +50,36 @@
 
                 <div id="student-learning-browser">
                     <h5>Courses</h5>
-                    <div class="horizontal-scroll">
+                    <div class="course-browser-grid">
                         @forelse($courses as $course)
-                            <a
-                                href="?course_id={{ $course->id }}"
-                                class="btn {{ request('course_id') == $course->id ? 'btn-primary' : 'btn-outline-primary' }}"
+                            <div
+                                class="course-card {{ request('course_id') == $course->id ? 'is-selected' : '' }}"
                                 data-filter-item
-                                data-filter-text="{{ strtolower($course->title) }}"
+                                data-filter-text="{{ strtolower($course->title . ' ' . ($course->description ?? '')) }}"
                             >
-                                {{ $course->title }}
-                            </a>
+                                <div class="course-card-body">
+                                    <div>
+                                        <h6 class="course-card-title">{{ $course->title }}</h6>
+                                        <p class="course-card-meta">{{ $course->lessons->count() }} lesson(s) available</p>
+                                    </div>
+                                    <div class="course-card-actions">
+                                        <a
+                                            href="?course_id={{ $course->id }}"
+                                            class="btn btn-sm {{ request('course_id') == $course->id ? 'btn-primary' : 'btn-outline-primary' }}"
+                                        >
+                                            Open Course
+                                        </a>
+                                        <a
+                                            href="{{ $course->youtubeSearchUrl() }}"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            Search YouTube
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         @empty
                             <p class="text-muted">No courses available yet.</p>
                         @endforelse
@@ -64,7 +89,12 @@
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                             <h5 class="mb-0">Lessons in {{ $selectedCourse->title }}</h5>
-                            <span class="text-muted small">{{ $selectedLessonCount }} available</span>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="text-muted small">{{ $selectedLessonCount }} available</span>
+                                <a href="{{ $selectedCourse->youtubeSearchUrl() }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                                    Search {{ $selectedCourse->title }} on YouTube
+                                </a>
+                            </div>
                         </div>
                         <div class="horizontal-scroll">
                             @forelse($selectedCourse->lessons as $lesson)
@@ -84,6 +114,7 @@
                     @endif
                 </div>
 
+                {{-- Section: Empty filter state. --}}
                 <div id="student-filter-empty" class="filter-empty d-none mt-4 p-4 text-center text-muted">
                     No courses or lessons match your search.
                 </div>
@@ -92,6 +123,7 @@
     </div>
 </div>
 
+{{-- Section: Selected lesson learning materials and quiz content. --}}
 @if($selectedLesson)
 <div class="row mt-4">
     <div class="col-12">
@@ -112,39 +144,54 @@
                     </div>
                 @endif
 
-                @if($selectedLesson->media_path)
+                @if($selectedVideoPath || $selectedPdfPath || $selectedLesson->media_path)
                     <div class="mb-4">
-                        <h5>Lesson Media</h5>
+                        <h5>Lesson Learning Materials</h5>
                         <div class="media-container">
                             @php
-                                $extension = strtolower(pathinfo($selectedLesson->media_path, PATHINFO_EXTENSION));
+                                $extension = $selectedLesson->media_path
+                                    ? strtolower(pathinfo($selectedLesson->media_path, PATHINFO_EXTENSION))
+                                    : '';
                             @endphp
                             
-                            @if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
+                            {{-- Section: Legacy image support. --}}
+                            @if($selectedLesson->media_path && in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
                                 <img src="{{ asset($selectedLesson->media_path) }}" alt="Lesson media" class="img-fluid">
-                            @elseif($extension === 'mp4')
+                            @endif
+
+                            {{-- Section: Embedded lesson video. --}}
+                            @if($selectedVideoPath)
                                 <video controls preload="metadata">
-                                    <source src="{{ asset($selectedLesson->media_path) }}" type="video/mp4">
+                                    <source src="{{ asset($selectedVideoPath) }}" type="video/mp4">
                                     Your browser does not support the video tag.
                                 </video>
-                            @elseif($extension === 'pdf')
-                                <div class="p-4 rounded-4 bg-light border">
-                                    <p class="mb-3">A PDF resource is attached to this lesson and can be opened in a new tab.</p>
-                                    <a href="{{ asset($selectedLesson->media_path) }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
+                            @endif
+
+                            {{-- Section: Downloadable lesson PDF. --}}
+                            @if($selectedPdfPath)
+                                <div class="resource-card p-4 mt-3">
+                                    <p class="mb-3">A PDF resource is attached to this lesson and can be opened or downloaded.</p>
+                                    <a href="{{ asset($selectedPdfPath) }}" class="btn btn-outline-primary" target="_blank" rel="noopener">
                                         Open PDF
                                     </a>
                                 </div>
                             @endif
-                            
+
+                            {{-- Section: Material action buttons. --}}
                             <div class="mt-3 d-flex flex-wrap gap-2">
-                                <a href="{{ asset($selectedLesson->media_path) }}" 
-                                   class="btn btn-primary" 
-                                   download>
-                                    Download Media
-                                </a>
-                                @if(in_array($extension, ['pdf', 'mp4']))
-                                    <a href="{{ asset($selectedLesson->media_path) }}" class="btn btn-outline-secondary" target="_blank" rel="noopener">
-                                        Open Media
+                                @if($selectedVideoPath)
+                                    <a href="{{ asset($selectedVideoPath) }}" class="btn btn-primary" download>
+                                        Download Video
+                                    </a>
+                                @endif
+                                @if($selectedPdfPath)
+                                    <a href="{{ asset($selectedPdfPath) }}" class="btn btn-outline-primary" download>
+                                        Download PDF
+                                    </a>
+                                @endif
+                                @if($selectedLesson->media_path && !$selectedVideoPath && !$selectedPdfPath)
+                                    <a href="{{ asset($selectedLesson->media_path) }}" class="btn btn-primary" download>
+                                        Download Media
                                     </a>
                                 @endif
                             </div>
@@ -229,6 +276,7 @@
 </div>
 @endif
 
+{{-- Section: Initial empty state before a course is selected. --}}
 @if(!$selectedCourse)
 <div class="row mt-4">
     <div class="col-12">

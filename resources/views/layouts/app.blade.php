@@ -6,6 +6,7 @@
     <title>@yield('title', 'BerryLearn LMS')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Section: Shared design tokens. */
         :root {
             --berry-primary: #0d6efd;
             --berry-success: #198754;
@@ -15,6 +16,8 @@
             --berry-border: rgba(13, 110, 253, 0.12);
             --berry-shadow: 0 16px 40px rgba(13, 110, 253, 0.08);
         }
+
+        /* Section: Page shell and top navigation. */
         body {
             min-height: 100vh;
             background:
@@ -52,6 +55,8 @@
             color: #fff;
             font-weight: 600;
         }
+
+        /* Section: Shared cards, statistics, and actions. */
         .section-card,
         .card {
             border: 0;
@@ -94,6 +99,8 @@
             padding-left: 1rem;
             padding-right: 1rem;
         }
+
+        /* Section: Search and filtering controls. */
         .soft-search {
             border: 1px solid var(--berry-border);
             border-radius: 999px;
@@ -117,6 +124,8 @@
             font-weight: 600;
             pointer-events: none;
         }
+
+        /* Section: Scrollable pills, course cards, and data tables. */
         .horizontal-scroll {
             display: flex;
             overflow-x: auto;
@@ -143,6 +152,51 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 18px rgba(13, 110, 253, 0.12);
         }
+        .course-browser-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .course-card {
+            border: 1px solid var(--berry-border);
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 14px 28px rgba(13, 110, 253, 0.06);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .course-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 34px rgba(13, 110, 253, 0.12);
+            border-color: rgba(13, 110, 253, 0.22);
+        }
+        .course-card.is-selected {
+            border-color: rgba(13, 110, 253, 0.42);
+            box-shadow: 0 18px 34px rgba(13, 110, 253, 0.14);
+        }
+        .course-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            height: 100%;
+            padding: 1rem;
+        }
+        .course-card-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .course-card-meta {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.92rem;
+        }
+        .course-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
         .table-responsive {
             border-radius: 1rem;
         }
@@ -161,6 +215,8 @@
             border-radius: 1rem;
             background: rgba(255, 255, 255, 0.72);
         }
+
+        /* Section: Learning media and quiz blocks. */
         .media-container {
             max-width: 100%;
             margin: 20px 0;
@@ -176,6 +232,11 @@
             border-radius: 1rem;
             box-shadow: 0 14px 30px rgba(13, 110, 253, 0.12);
             background: #000;
+        }
+        .resource-card {
+            border: 1px solid rgba(13, 110, 253, 0.12);
+            border-radius: 1rem;
+            background: rgba(248, 249, 250, 0.8);
         }
         .quiz-question-card {
             border: 1px solid rgba(13, 110, 253, 0.08);
@@ -295,6 +356,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Section: Auto-dismiss feedback alerts after a short pause.
             document.querySelectorAll('.alert').forEach(function (alert) {
                 window.setTimeout(function () {
                     if (!alert.classList.contains('show')) {
@@ -304,6 +366,7 @@
                 }, 4000);
             });
 
+            // Section: Fade content in as it enters the viewport.
             const revealItems = document.querySelectorAll('.reveal-up');
             if ('IntersectionObserver' in window && revealItems.length > 0) {
                 const revealObserver = new IntersectionObserver(function (entries, observer) {
@@ -325,6 +388,7 @@
                 });
             }
 
+            // Section: Count up dashboard metrics for a livelier feel.
             document.querySelectorAll('[data-countup]').forEach(function (counter) {
                 const target = Number(counter.getAttribute('data-countup'));
                 if (!Number.isFinite(target)) {
@@ -347,6 +411,7 @@
                 window.requestAnimationFrame(step);
             });
 
+            // Section: Filter interactive lists and show empty states when needed.
             document.querySelectorAll('[data-filter-input]').forEach(function (input) {
                 const targetSelector = input.getAttribute('data-filter-input');
                 const target = document.querySelector(targetSelector);
