@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class LessonController extends Controller
 {
@@ -41,17 +42,37 @@ class LessonController extends Controller
             'pdf' => 'nullable|file|mimes:pdf|max:20480',
         ]);
 
+        // Section: Detect whether the current database supports dedicated video and PDF fields.
+        $supportsDedicatedMaterials = $this->supportsDedicatedMaterialColumns();
+
+        if (!$supportsDedicatedMaterials && $request->hasFile('video') && $request->hasFile('pdf')) {
+            return back()
+                ->withErrors([
+                    'pdf' => 'This server is still using legacy lesson media storage. Run the latest migrations before attaching both a video and a PDF to the same lesson.',
+                ])
+                ->withInput();
+        }
+
         // Section: Persist the lesson record with learning materials.
-        Lesson::create([
+        $lessonData = [
             'course_id' => $validated['course_id'],
             'title' => $validated['title'],
             'content' => $validated['content'] ?? null,
-            'media_path' => null,
-            'video_path' => $request->hasFile('video') ? $this->storeLearningFile($request->file('video'), 'video') : null,
-            'pdf_path' => $request->hasFile('pdf') ? $this->storeLearningFile($request->file('pdf'), 'pdf') : null,
-        ]);
+        ];
 
-        return redirect()->route('admin.lessons')->with('success', 'Lesson created successfully!');
+        if ($supportsDedicatedMaterials) {
+            $lessonData['media_path'] = null;
+            $lessonData['video_path'] = $request->hasFile('video') ? $this->storeLearningFile($request->file('video'), 'video') : null;
+            $lessonData['pdf_path'] = $request->hasFile('pdf') ? $this->storeLearningFile($request->file('pdf'), 'pdf') : null;
+        } else {
+            $lessonData['media_path'] = $request->hasFile('video')
+                ? $this->storeLearningFile($request->file('video'), 'video')
+                : ($request->hasFile('pdf') ? $this->storeLearningFile($request->file('pdf'), 'pdf') : null);
+        }
+
+        Lesson::create($lessonData);
+
+        return redirect()->route('admin.lessons')->with('success', $this->uploadSuccessMessage($supportsDedicatedMaterials));
     }
 
     /**
@@ -77,30 +98,63 @@ class LessonController extends Controller
             'pdf' => 'nullable|file|mimes:pdf|max:20480',
         ]);
 
-        // Section: Replace the current lesson video only when a new one is uploaded.
-        $videoPath = $lesson->video_path;
-        if ($request->hasFile('video')) {
-            $this->deleteLearningFile($lesson->video_path);
-            $videoPath = $this->storeLearningFile($request->file('video'), 'video');
+        // Section: Detect whether the current database supports dedicated video and PDF fields.
+        $supportsDedicatedMaterials = $this->supportsDedicatedMaterialColumns();
+
+        if (!$supportsDedicatedMaterials && $request->hasFile('video') && $request->hasFile('pdf')) {
+            return back()
+                ->withErrors([
+                    'pdf' => 'This server is still using legacy lesson media storage. Run the latest migrations before attaching both a video and a PDF to the same lesson.',
+                ])
+                ->withInput();
         }
 
-        // Section: Replace the current lesson PDF only when a new one is uploaded.
-        $pdfPath = $lesson->pdf_path;
-        if ($request->hasFile('pdf')) {
-            $this->deleteLearningFile($lesson->pdf_path);
-            $pdfPath = $this->storeLearningFile($request->file('pdf'), 'pdf');
+        if ($supportsDedicatedMaterials) {
+            // Section: Replace the current lesson video only when a new one is uploaded.
+            $videoPath = $lesson->video_path;
+            if ($request->hasFile('video')) {
+                $this->deleteLearningFile($lesson->video_path);
+                $videoPath = $this->storeLearningFile($request->file('video'), 'video');
+            }
+
+            // Section: Replace the current lesson PDF only when a new one is uploaded.
+            $pdfPath = $lesson->pdf_path;
+            if ($request->hasFile('pdf')) {
+                $this->deleteLearningFile($lesson->pdf_path);
+                $pdfPath = $this->storeLearningFile($request->file('pdf'), 'pdf');
+            }
+
+            // Section: Save the updated lesson record.
+            $lesson->update([
+                'course_id' => $validated['course_id'],
+                'title' => $validated['title'],
+                'content' => $validated['content'] ?? null,
+                'video_path' => $videoPath,
+                'pdf_path' => $pdfPath,
+            ]);
+        } else {
+            // Section: Legacy fallback mode stores one uploaded learning file in the original media_path column.
+            $mediaPath = $lesson->media_path;
+
+            if ($request->hasFile('video') || $request->hasFile('pdf')) {
+                $this->deleteLearningFile($lesson->media_path);
+                $this->deleteLearningFile($lesson->video_path);
+                $this->deleteLearningFile($lesson->pdf_path);
+
+                $mediaPath = $request->hasFile('video')
+                    ? $this->storeLearningFile($request->file('video'), 'video')
+                    : $this->storeLearningFile($request->file('pdf'), 'pdf');
+            }
+
+            $lesson->update([
+                'course_id' => $validated['course_id'],
+                'title' => $validated['title'],
+                'content' => $validated['content'] ?? null,
+                'media_path' => $mediaPath,
+            ]);
         }
 
-        // Section: Save the updated lesson record.
-        $lesson->update([
-            'course_id' => $validated['course_id'],
-            'title' => $validated['title'],
-            'content' => $validated['content'] ?? null,
-            'video_path' => $videoPath,
-            'pdf_path' => $pdfPath,
-        ]);
-
-        return redirect()->route('admin.lessons')->with('success', 'Lesson updated successfully!');
+        return redirect()->route('admin.lessons')->with('success', $this->uploadSuccessMessage($supportsDedicatedMaterials));
     }
 
     /**
@@ -142,5 +196,25 @@ class LessonController extends Controller
         if ($path && file_exists(public_path($path))) {
             unlink(public_path($path));
         }
+    }
+
+    /**
+     * Section: Check whether the lessons table includes dedicated video and PDF columns.
+     */
+    private function supportsDedicatedMaterialColumns(): bool
+    {
+        return Schema::hasColumn('lessons', 'video_path') && Schema::hasColumn('lessons', 'pdf_path');
+    }
+
+    /**
+     * Section: Build a success message that reflects whether the server is using legacy media storage.
+     */
+    private function uploadSuccessMessage(bool $supportsDedicatedMaterials): string
+    {
+        if ($supportsDedicatedMaterials) {
+            return 'Lesson saved successfully!';
+        }
+
+        return 'Lesson saved successfully using legacy media storage. Run the latest migrations to attach both a video and a PDF to the same lesson.';
     }
 }
